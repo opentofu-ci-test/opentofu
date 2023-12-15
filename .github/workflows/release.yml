@@ -43,6 +43,8 @@ jobs:
       - name: Compare versions
         if: startsWith(inputs.tag, 'v')
         run: ./.github/scripts/compare-release-version.sh
+        env:
+          TARGET_VERSION: ${{inputs.tag}}
 
       - name: Determine Go version
         id: go
