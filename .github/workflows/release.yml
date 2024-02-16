@@ -6,6 +6,10 @@ on:
       tag:
         description: "Git tag (leave empty for dry run)"
         required: false
+      prerelease:
+        description: "Is this a pre-release?"
+        required: true
+        type: boolean
 
 jobs:
   release:
@@ -23,9 +27,15 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Check if tag is on main branch
+        run: |
+          IS_TAG_ON_MAIN=$(git branch --contains ${{inputs.tag}} | grep -q "main" && echo true || echo false)
+          ALLOW_RELEASE=startsWith(inputs.tag, 'v') || ( !${{inputs.prerelease}} && $IS_TAG_ON_MAIN )
+          echo "ALLOW_RELEASE=${ALLOW_RELEASE}" >>"${GITHUB_ENV}"
+
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v2
-        if: startsWith(inputs.tag, 'v')
+        if: ${{env.ALLOW_RELEASE}}
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
@@ -74,7 +84,7 @@ jobs:
           SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_TOKEN }}
 
       - name: Import GPG key
-        if: startsWith(inputs.tag, 'v')
+        if: ${{env.ALLOW_RELEASE}}
         run: |
           GPG_KEY_FILE=/tmp/signing-key.gpg
           echo "${{ secrets.GPG_PRIVATE_KEY }}" | base64 --decode > "${GPG_KEY_FILE}"
@@ -91,16 +101,17 @@ jobs:
         uses: goreleaser/goreleaser-action@v4
         with:
           version: v1.21.2
-          args: release --clean --timeout=60m --snapshot=${{ !startsWith(inputs.tag, 'v') }}
+          args: release --clean --timeout=60m --snapshot=${{ !${{env.ALLOW_RELEASE}} }}
         env:
           # Note: the GPG_FINGERPRINT and GPG_KEY_FILE are defined in the task above. If they are not set,
           # goreleaser won't sign the packages.
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_TOKEN }}
+          SNAPCRAFT_CHANNEL: ${{ inputs.prerelease &&  'edge' || 'stable' }}
 
       - name: Remove GPG key
-        if: startsWith(inputs.tag, 'v')
-        run:
+        if: always()
+        run: |
           rm -rf ~/.gnupg
           if [ -n "${GPG_KEY_FILE}" ]; then
             rm -rf "${GPG_KEY_FILE}"
@@ -113,7 +124,7 @@ jobs:
           path: dist
 
       - name: Upload Debian packages to PackageCloud
-        if: startsWith(inputs.tag, 'v')
+        if: startsWith(inputs.tag, 'v') && !inputs.prerelease
         uses: computology/packagecloud-github-action@v0.6
         with:
                 PACKAGE-NAME: dist/*.deb
@@ -122,7 +133,7 @@ jobs:
                 PACKAGECLOUD-DISTRO: any/any
                 PACKAGECLOUD-TOKEN: ${{ secrets.PACKAGECLOUD_TOKEN }}
       - name: Upload RPM packages to PackageCloud
-        if: startsWith(inputs.tag, 'v')
+        if: startsWith(inputs.tag, 'v') && !inputs.prerelease
         uses: computology/packagecloud-github-action@v0.6
         with:
                 PACKAGE-NAME: dist/*.rpm
