@@ -35,7 +35,7 @@ jobs:
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v2
-        if: ${{env.ALLOW_RELEASE}}
+        if: ${{ALLOW_RELEASE}}
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
@@ -84,7 +84,7 @@ jobs:
           SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_TOKEN }}
 
       - name: Import GPG key
-        if: ${{env.ALLOW_RELEASE}}
+        if: ${{ALLOW_RELEASE}}
         run: |
           GPG_KEY_FILE=/tmp/signing-key.gpg
           echo "${{ secrets.GPG_PRIVATE_KEY }}" | base64 --decode > "${GPG_KEY_FILE}"
@@ -101,7 +101,7 @@ jobs:
         uses: goreleaser/goreleaser-action@v4
         with:
           version: v1.21.2
-          args: release --clean --timeout=60m --snapshot=${{ !${{env.ALLOW_RELEASE}} }}
+          args: release --clean --timeout=60m --snapshot=${{ !${{ALLOW_RELEASE}} }}
         env:
           # Note: the GPG_FINGERPRINT and GPG_KEY_FILE are defined in the task above. If they are not set,
           # goreleaser won't sign the packages.
