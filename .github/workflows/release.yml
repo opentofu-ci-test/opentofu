@@ -60,7 +60,7 @@ jobs:
       - name: Check if release is allowed or not
         id: validate_release
         run: |
-          ALLOW_RELEASE=${{ startsWith(inputs.tag, 'v') || ( !inputs.prerelease && steps.validate_tag.outputs.IS_TAG_ON_MAIN ) }}
+          ALLOW_RELEASE=${{ startsWith(inputs.tag, 'v') || !( !inputs.prerelease && steps.validate_tag.outputs.IS_TAG_ON_MAIN ) }}
           echo "ALLOW_RELEASE=${ALLOW_RELEASE}" >> $GITHUB_OUTPUT
 
       - name: Determine Go version
