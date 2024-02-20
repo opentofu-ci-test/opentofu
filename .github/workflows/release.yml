@@ -53,7 +53,7 @@ jobs:
       - name: Check if tag is on main branch
         run: |
           IS_TAG_ON_MAIN=$(git branch --contains ${{inputs.tag}} | grep -q "main" && echo true || echo false)
-          ALLOW_RELEASE=startsWith(inputs.tag, 'v') || ( !${{inputs.prerelease}} && $IS_TAG_ON_MAIN )
+          ALLOW_RELEASE=${{ startsWith(inputs.tag, 'v') || ( !${{inputs.prerelease}} && $IS_TAG_ON_MAIN ) }}
           echo "ALLOW_RELEASE=${ALLOW_RELEASE}" >> $GITHUB_ENV
 
       - name: Determine Go version
