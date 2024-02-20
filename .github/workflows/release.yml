@@ -101,7 +101,7 @@ jobs:
         uses: goreleaser/goreleaser-action@v4
         with:
           version: v1.21.2
-          args: release --clean --timeout=60m --snapshot=${{ !${{ env.ALLOW_RELEASE }} }}
+          args: release --clean --timeout=60m --snapshot=!${{ env.ALLOW_RELEASE }}
         env:
           # Note: the GPG_FINGERPRINT and GPG_KEY_FILE are defined in the task above. If they are not set,
           # goreleaser won't sign the packages.
