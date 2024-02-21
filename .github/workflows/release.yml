@@ -60,8 +60,10 @@ jobs:
       - name: Check if release is allowed or not
         id: validate_release
         run: |
-          ALLOW_RELEASE=${{ startsWith(inputs.tag, 'v') || !( !inputs.prerelease && steps.validate_tag.outputs.IS_TAG_ON_MAIN ) }}
-          echo "ALLOW_RELEASE=${ALLOW_RELEASE}" >> $GITHUB_OUTPUT
+          if [[ !inputs.prerelease && steps.validate_tag.outputs.IS_TAG_ON_MAIN == true ]]; then
+            echo "ERROR: Creating stable release from a tag on main is not allowed."
+            exit 1
+          fi
 
       - name: Determine Go version
         id: go
@@ -91,7 +93,7 @@ jobs:
           SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_TOKEN }}
 
       - name: Import GPG key
-        if: ${{ steps.validate_release.outputs.ALLOW_RELEASE }}
+        if: startsWith(inputs.tag, 'v')
         run: |
           GPG_KEY_FILE=/tmp/signing-key.gpg
           echo "${{ secrets.GPG_PRIVATE_KEY }}" | base64 --decode > "${GPG_KEY_FILE}"
@@ -108,7 +110,7 @@ jobs:
         uses: goreleaser/goreleaser-action@v4
         with:
           version: v1.21.2
-          args: release --clean --timeout=60m --snapshot=${{ !steps.validate_release.outputs.ALLOW_RELEASE }}
+          args: release --clean --timeout=60m --snapshot=${{ !startsWith(inputs.tag, 'v') }}
         env:
           # Note: the GPG_FINGERPRINT and GPG_KEY_FILE are defined in the task above. If they are not set,
           # goreleaser won't sign the packages.
