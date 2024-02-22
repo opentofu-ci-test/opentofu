@@ -53,8 +53,8 @@ jobs:
       - name: Check if tag is on main branch or version branch
         id: validate_tag
         run: |
-          IS_TAG_ON_MAIN=$(git branch --contains ${{inputs.tag}} | grep -q "main" && echo true || echo false)
-          IS_TAG_ON_VERSION=$(git branch --contains ${{inputs.tag}} | grep -E "^v[0-9]+\.[0-9]+" && echo true || echo false)
+          IS_TAG_ON_MAIN=$(git branch -a --contains ${{inputs.tag}} | grep -q "main" && echo true || echo false)
+          IS_TAG_ON_VERSION=$(git branch -a --contains ${{inputs.tag}} | grep -E "^v[0-9]+\.[0-9]+" && echo true || echo false)
           echo "IS_TAG_ON_MAIN=${IS_TAG_ON_MAIN}" >> $GITHUB_OUTPUT
           echo "IS_TAG_ON_VERSION=${IS_TAG_ON_VERSION}" >> $GITHUB_OUTPUT
           echo "Debug: IS_TAG_ON_MAIN=${IS_TAG_ON_MAIN}, IS_TAG_ON_VERSION=${IS_TAG_ON_VERSION}"
