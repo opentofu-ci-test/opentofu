@@ -64,7 +64,7 @@ jobs:
         run: |
           echo "Debug: inputs.prerelease=${{ inputs.prerelease }}"
           echo "Debug: steps.validate_tag.outputs.IS_TAG_ON_MAIN=${{ steps.validate_tag.outputs.IS_TAG_ON_MAIN }}"
-          if [[ !inputs.prerelease && steps.validate_tag.outputs.IS_TAG_ON_MAIN == true ]]; then
+          if [[ !${inputs.prerelease} && ${steps.validate_tag.outputs.IS_TAG_ON_MAIN} == true ]]; then
             echo "ERROR: Creating stable release from a tag on main is not allowed."
             exit 1
           fi
@@ -72,10 +72,10 @@ jobs:
       - name: Check eligibility for archive push
         id: archive
         run: |
-          if [[ inputs.prerelease && (steps.validate_tag.outputs.IS_TAG_ON_MAIN == true || steps.validate_tag.outputs.IS_TAG_ON_VERSION == true) ]]; then
-            PUSH_ARCHIVE=false
-          else
+          if [[ ${inputs.prerelease} && (${steps.validate_tag.outputs.IS_TAG_ON_MAIN} == true || ${steps.validate_tag.outputs.IS_TAG_ON_VERSION} == true) ]]; then
             PUSH_ARCHIVE=true
+          else
+            PUSH_ARCHIVE=false
           fi
           echo "PUSH_ARCHIVE=${PUSH_ARCHIVE}" >> $GITHUB_ENV
           echo "Debug: PUSH_ARCHIVE=${PUSH_ARCHIVE}, PUSH_ARCHIVE=${PUSH_ARCHIVE}"
