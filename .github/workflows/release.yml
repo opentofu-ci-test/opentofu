@@ -72,13 +72,15 @@ jobs:
       - name: Check eligibility for archive push
         id: archive
         run: |
-          if [[ ${inputs.prerelease} && (${steps.validate_tag.outputs.IS_TAG_ON_MAIN} == true || ${steps.validate_tag.outputs.IS_TAG_ON_VERSION} == true) ]]; then
-            PUSH_ARCHIVE=true
-          else
-            PUSH_ARCHIVE=false
-          fi
+          PUSH_ARCHIVE=$(
+            [[ 
+              "${{ inputs.prerelease }}" == "true" && 
+              ("${{ steps.validate_tag.outputs.IS_TAG_ON_MAIN }}" == "true" || 
+              "${{ steps.validate_tag.outputs.IS_TAG_ON_VERSION }}" == "true") 
+            ]] && echo false || echo true
+          )
           echo "PUSH_ARCHIVE=${PUSH_ARCHIVE}" >> $GITHUB_ENV
-          echo "Debug: PUSH_ARCHIVE=${PUSH_ARCHIVE}, PUSH_ARCHIVE=${PUSH_ARCHIVE}"
+          echo "Debug: PUSH_ARCHIVE=${PUSH_ARCHIVE}"
 
       - name: Determine Go version
         id: go
