@@ -64,7 +64,7 @@ jobs:
         run: |
           echo "Debug: inputs.prerelease=${{ inputs.prerelease }}"
           echo "Debug: steps.validate_tag.outputs.IS_TAG_ON_MAIN=${{ steps.validate_tag.outputs.IS_TAG_ON_MAIN }}"
-          if [[ !${inputs.prerelease} && ${steps.validate_tag.outputs.IS_TAG_ON_MAIN} == true ]]; then
+          if [[ "${{ inputs.prerelease }}" == "false" && "${{ steps.validate_tag.outputs.IS_TAG_ON_MAIN }}" == "true" ]]; then
             echo "ERROR: Creating stable release from a tag on main is not allowed."
             exit 1
           fi
