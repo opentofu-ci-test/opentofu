@@ -57,13 +57,10 @@ jobs:
           IS_TAG_ON_VERSION=$(git branch -a --contains ${{inputs.tag}} | grep -E "^v[0-9]+\.[0-9]+" && echo true || echo false)
           echo "IS_TAG_ON_MAIN=${IS_TAG_ON_MAIN}" >> $GITHUB_OUTPUT
           echo "IS_TAG_ON_VERSION=${IS_TAG_ON_VERSION}" >> $GITHUB_OUTPUT
-          echo "Debug: IS_TAG_ON_MAIN=${IS_TAG_ON_MAIN}, IS_TAG_ON_VERSION=${IS_TAG_ON_VERSION}"
 
       - name: Check if release is allowed or not
         id: validate_release
         run: |
-          echo "Debug: inputs.prerelease=${{ inputs.prerelease }}"
-          echo "Debug: steps.validate_tag.outputs.IS_TAG_ON_MAIN=${{ steps.validate_tag.outputs.IS_TAG_ON_MAIN }}"
           if [[ "${{ inputs.prerelease }}" == "false" && "${{ steps.validate_tag.outputs.IS_TAG_ON_MAIN }}" == "true" ]]; then
             echo "ERROR: Creating stable release from a tag on main is not allowed."
             exit 1
@@ -80,7 +77,6 @@ jobs:
             ]] && echo false || echo true
           )
           echo "PUSH_ARCHIVE=${PUSH_ARCHIVE}" >> $GITHUB_ENV
-          echo "Debug: PUSH_ARCHIVE=${PUSH_ARCHIVE}"
 
       - name: Determine Go version
         id: go
