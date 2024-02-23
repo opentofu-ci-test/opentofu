@@ -106,7 +106,7 @@ jobs:
           SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_TOKEN }}
 
       - name: Import GPG key
-        if: startsWith(inputs.tag, 'v')
+        if: startsWith(inputs.tag, 'v') && steps.archive.outputs.PUSH_ARCHIVE
         run: |
           GPG_KEY_FILE=/tmp/signing-key.gpg
           echo "${{ secrets.GPG_PRIVATE_KEY }}" | base64 --decode > "${GPG_KEY_FILE}"
